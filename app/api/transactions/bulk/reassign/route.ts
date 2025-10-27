@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApiAuth } from '@/lib/api-auth';
-import { bulkReassignSchema } from '@/lib/validators';
+import { bulkReassignSchema } from '@/lib/validators/transaction';
 import { bulkReassignCategory } from '@/lib/queries/transactions';
 import { logger } from '@/lib/logger';
 import { ZodError } from 'zod';

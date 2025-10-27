@@ -10,8 +10,9 @@ import { logger } from '@/lib/logger';
  * FR-013: Confirm transaction deletion
  * NF-003: API response time <500ms P95
  */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now();
+  const { id } = await params;
 
   try {
     // Authenticate user
@@ -19,7 +20,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     if (error) return error;
 
     // Delete transaction with user scoping
-    const deleted = await deleteTransaction(user.id, params.id);
+    const deleted = await deleteTransaction(user.id, id);
 
     if (!deleted) {
       const duration = Date.now() - startTime;
@@ -27,7 +28,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         route: '/api/transactions/:id',
         method: 'DELETE',
         userId: user.id,
-        transactionId: params.id,
+        transactionId: id,
         statusCode: 404,
         duration,
       });
@@ -49,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       route: '/api/transactions/:id',
       method: 'DELETE',
       userId: user.id,
-      transactionId: params.id,
+      transactionId: id,
       statusCode: 204,
       duration,
     });

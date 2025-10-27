@@ -1,14 +1,6 @@
 import { db } from '@/lib/db';
 import { Prisma, TxnType } from '@prisma/client';
-
-export interface TransactionFilters {
-  from?: Date;
-  to?: Date;
-  categoryId?: string;
-  accountId?: string;
-  type?: TxnType;
-  search?: string;
-}
+import { TransactionFilters } from '@/lib/validators/transaction';
 
 export async function getTransactions(
   userId: string,
@@ -26,8 +18,8 @@ export async function getTransactions(
     ...(filters?.categoryId && { categoryId: filters.categoryId }),
     ...(filters?.accountId && { accountId: filters.accountId }),
     ...(filters?.type && { type: filters.type }),
-    ...(filters?.search && {
-      note: { contains: filters.search, mode: 'insensitive' },
+    ...(filters?.q && {
+      note: { contains: filters.q, mode: 'insensitive' },
     }),
   };
 

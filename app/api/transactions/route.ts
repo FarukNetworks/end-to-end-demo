@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApiAuth } from '@/lib/api-auth';
-import { createTransactionSchema } from '@/lib/validators';
+import { createTransactionSchema } from '@/lib/validators/transaction';
 import { logger } from '@/lib/logger';
 import { ZodError } from 'zod';
 
