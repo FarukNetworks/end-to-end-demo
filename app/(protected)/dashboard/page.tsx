@@ -1,55 +1,49 @@
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { authOptions } from '@/lib/auth';
+'use client';
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+import { useTransactions } from '@/hooks/use-transactions';
+import { TransactionList } from '@/components/transactions/transaction-list';
+import { AddTransactionButton } from '@/components/transactions/add-transaction-button';
+import { Spinner } from '@/components/ui/spinner';
+import { EmptyState } from '@/components/empty-state';
 
-  if (!session?.user) {
-    redirect('/login');
+export default function DashboardPage() {
+  const { transactions, isLoading, error } = useTransactions();
+
+  if (error) {
+    return (
+      <div className="container py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
+            <h2 className="mb-2 text-xl font-semibold text-destructive">
+              Error loading transactions
+            </h2>
+            <p className="text-muted-foreground">{error.message}</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container py-16">
-      <div className="mx-auto max-w-3xl text-center">
-        <h1 className="mb-4 text-4xl font-bold">Dashboard</h1>
-        <p className="mb-8 text-xl text-muted-foreground">
-          Welcome,{' '}
-          <span className="font-semibold text-foreground">
-            {session.user.name || session.user.email}
-          </span>
-          !
-        </p>
-
-        <div className="bg-card rounded-lg border p-8 text-left">
-          <h2 className="mb-4 text-2xl font-semibold">What&apos;s Next?</h2>
-          <ul className="space-y-3 text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">✓</span>
-              <span>Transaction management and tracking</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">✓</span>
-              <span>Category and account organization</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">✓</span>
-              <span>Beautiful charts and insights</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">✓</span>
-              <span>Cash-flow tracking and reports</span>
-            </li>
-          </ul>
+    <div className="container py-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Transactions</h1>
+          <AddTransactionButton />
         </div>
 
-        <div className="mt-8">
-          <Button asChild variant="outline">
-            <Link href="/">← Back to Home</Link>
-          </Button>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Spinner size="lg" />
+          </div>
+        ) : transactions.length === 0 ? (
+          <EmptyState
+            title="No transactions yet"
+            description="Get started by adding your first transaction"
+          />
+        ) : (
+          <TransactionList transactions={transactions} />
+        )}
       </div>
     </div>
   );

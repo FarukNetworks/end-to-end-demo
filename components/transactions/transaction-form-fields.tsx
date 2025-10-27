@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Transaction } from '@prisma/client';
+import type { Transaction, CategoryType } from '@prisma/client';
 import { TxnType } from '@prisma/client';
 
 import { createTransactionSchema } from '@/lib/validators/transaction';
@@ -16,9 +16,16 @@ import { CategorySelect } from '@/components/categories/category-select';
 import { AccountSelect } from '@/components/accounts/account-select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { toast } from '@/lib/toast';
+import { DeleteTransactionDialog } from './delete-transaction-dialog';
+import { useTransactions } from '@/hooks/use-transactions';
+
+type TransactionWithRelations = Transaction & {
+  category: { name: string; color: string; type: CategoryType };
+  account: { name: string };
+};
 
 interface TransactionFormFieldsProps {
-  transaction?: Transaction;
+  transaction?: TransactionWithRelations;
   mode: 'create' | 'edit';
   onSuccess: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
@@ -32,6 +39,10 @@ export function TransactionFormFields({
 }: TransactionFormFieldsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [amountDisplay, setAmountDisplay] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Use optimistic updates hook
+  const { addTransaction, updateTransaction } = useTransactions();
 
   const form = useForm({
     resolver: zodResolver(createTransactionSchema),
@@ -75,22 +86,14 @@ export function TransactionFormFields({
     setIsLoading(true);
 
     try {
-      const url = mode === 'create' ? '/api/transactions' : `/api/transactions/${transaction?.id}`;
-
-      const method = mode === 'create' ? 'POST' : 'PATCH';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to save transaction');
+      if (mode === 'create') {
+        await addTransaction(data);
+        toast.success('Transaction added!');
+      } else if (transaction) {
+        await updateTransaction(transaction.id, data);
+        toast.success('Transaction updated!');
       }
 
-      toast.success(mode === 'create' ? 'Transaction added!' : 'Transaction updated!');
       form.reset();
       onSuccess();
     } catch (error) {
@@ -252,6 +255,28 @@ export function TransactionFormFields({
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Saving...' : mode === 'create' ? 'Add Transaction' : 'Save Changes'}
       </Button>
+
+      {/* Delete Button (Edit Mode Only) */}
+      {mode === 'edit' && transaction && (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isLoading}
+          >
+            Delete Transaction
+          </Button>
+
+          <DeleteTransactionDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            transaction={transaction}
+            onDeleted={onSuccess}
+          />
+        </>
+      )}
     </form>
   );
 }

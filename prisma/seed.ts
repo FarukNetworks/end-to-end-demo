@@ -1,5 +1,13 @@
-import { PrismaClient, CategoryType, TxnType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { createDefaultCategories } from '@/lib/seed/categories';
+import { seedDefaultAccounts } from '@/lib/seed/accounts';
+
+// Enum for transaction types (matches Prisma schema)
+enum TxnType {
+  expense = 'expense',
+  income = 'income',
+}
 
 // Check if DATABASE_URL is available before proceeding
 if (!process.env.DATABASE_URL) {
@@ -8,12 +16,6 @@ if (!process.env.DATABASE_URL) {
 }
 
 const prisma = new PrismaClient();
-
-// Type for Prisma transaction client
-type TransactionClient = Omit<
-  PrismaClient,
-  '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
->;
 
 async function main() {
   console.log('Starting database seed...');
@@ -34,10 +36,12 @@ async function main() {
   console.log('✓ Created demo user:', demoUser.email);
 
   // Seed default categories
-  await seedDefaultCategories(prisma, demoUser.id);
+  await createDefaultCategories(prisma, demoUser.id);
+  console.log('✓ Created 10 default categories for demo user');
 
   // Seed default accounts
   await seedDefaultAccounts(prisma, demoUser.id);
+  console.log('✓ Created 2 default accounts for demo user');
 
   // Seed demo transactions (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -47,131 +51,6 @@ async function main() {
   }
 
   console.log('✓ Database seed completed successfully!');
-}
-
-/**
- * Seeds default system categories for a user
- * Exported for reuse in AUTH-001 signup flow
- */
-export async function seedDefaultCategories(tx: TransactionClient | PrismaClient, userId: string) {
-  const categories = [
-    // Expense categories
-    {
-      name: 'Groceries',
-      color: '#10b981',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Dining Out',
-      color: '#f59e0b',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Transport',
-      color: '#3b82f6',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Utilities',
-      color: '#8b5cf6',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Rent',
-      color: '#ef4444',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Entertainment',
-      color: '#ec4899',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Health',
-      color: '#14b8a6',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    {
-      name: 'Shopping',
-      color: '#f97316',
-      type: CategoryType.expense,
-      isSystem: true,
-    },
-    // Income categories
-    {
-      name: 'Salary',
-      color: '#22c55e',
-      type: CategoryType.income,
-      isSystem: true,
-    },
-    {
-      name: 'Other Income',
-      color: '#84cc16',
-      type: CategoryType.income,
-      isSystem: true,
-    },
-  ];
-
-  for (const category of categories) {
-    // Check if category already exists for this user
-    const existing = await tx.category.findFirst({
-      where: {
-        userId,
-        name: category.name,
-        type: category.type,
-      },
-    });
-
-    if (!existing) {
-      await tx.category.create({
-        data: {
-          ...category,
-          userId,
-        },
-      });
-    }
-  }
-
-  console.log(`✓ Created ${categories.length} default categories for user ${userId}`);
-}
-
-/**
- * Seeds default accounts for a user
- * Exported for reuse in AUTH-001 signup flow
- */
-export async function seedDefaultAccounts(tx: TransactionClient | PrismaClient, userId: string) {
-  const accounts = [
-    { name: 'Cash', color: '#22c55e' },
-    { name: 'Card', color: '#3b82f6' },
-  ];
-
-  for (const account of accounts) {
-    // Check if account already exists for this user
-    const existing = await tx.account.findFirst({
-      where: {
-        userId,
-        name: account.name,
-      },
-    });
-
-    if (!existing) {
-      await tx.account.create({
-        data: {
-          ...account,
-          userId,
-        },
-      });
-    }
-  }
-
-  console.log(`✓ Created ${accounts.length} default accounts for user ${userId}`);
 }
 
 /**
@@ -189,19 +68,22 @@ async function seedDemoTransactions(prisma: PrismaClient, userId: string) {
   const categories = await prisma.category.findMany({ where: { userId } });
   const accounts = await prisma.account.findMany({ where: { userId } });
 
-  const groceriesCategory = categories.find((c) => c.name === 'Groceries');
-  const diningCategory = categories.find((c) => c.name === 'Dining Out');
-  const transportCategory = categories.find((c) => c.name === 'Transport');
-  const utilitiesCategory = categories.find((c) => c.name === 'Utilities');
-  const rentCategory = categories.find((c) => c.name === 'Rent');
-  const entertainmentCategory = categories.find((c) => c.name === 'Entertainment');
-  const healthCategory = categories.find((c) => c.name === 'Health');
-  const shoppingCategory = categories.find((c) => c.name === 'Shopping');
-  const salaryCategory = categories.find((c) => c.name === 'Salary');
-  const otherIncomeCategory = categories.find((c) => c.name === 'Other Income');
+  type Category = (typeof categories)[0];
+  type Account = (typeof accounts)[0];
 
-  const cashAccount = accounts.find((a) => a.name === 'Cash');
-  const cardAccount = accounts.find((a) => a.name === 'Card');
+  const groceriesCategory = categories.find((c: Category) => c.name === 'Groceries');
+  const diningCategory = categories.find((c: Category) => c.name === 'Dining Out');
+  const transportCategory = categories.find((c: Category) => c.name === 'Transport');
+  const utilitiesCategory = categories.find((c: Category) => c.name === 'Utilities');
+  const rentCategory = categories.find((c: Category) => c.name === 'Rent');
+  const entertainmentCategory = categories.find((c: Category) => c.name === 'Entertainment');
+  const healthCategory = categories.find((c: Category) => c.name === 'Health');
+  const shoppingCategory = categories.find((c: Category) => c.name === 'Shopping');
+  const salaryCategory = categories.find((c: Category) => c.name === 'Salary');
+  const otherIncomeCategory = categories.find((c: Category) => c.name === 'Other Income');
+
+  const cashAccount = accounts.find((a: Account) => a.name === 'Cash');
+  const cardAccount = accounts.find((a: Account) => a.name === 'Card');
 
   if (!groceriesCategory || !cashAccount || !cardAccount || !salaryCategory) {
     console.warn('⚠ Required categories or accounts not found for demo data');

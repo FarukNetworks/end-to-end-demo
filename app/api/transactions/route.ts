@@ -1,9 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApiAuth } from '@/lib/api-auth';
-import { createTransactionSchema } from '@/lib/validators/transaction';
+import { createTransactionSchema, transactionFiltersSchema } from '@/lib/validators/transaction';
+import { getTransactions } from '@/lib/queries/transactions';
 import { logger } from '@/lib/logger';
 import { ZodError } from 'zod';
+
+/**
+ * GET /api/transactions
+ * Fetch transactions with optional filters
+ *
+ * FR-007: List transactions
+ * FR-016: Transaction filtering
+ * NF-003: API response time <500ms P95
+ */
+export async function GET(req: NextRequest) {
+  const startTime = Date.now();
+
+  try {
+    // Authenticate user
+    const { error, user } = await requireApiAuth();
+    if (error) return error;
+
+    // Parse query parameters
+    const { searchParams } = new URL(req.url);
+    const filters = {
+      from: searchParams.get('from') ? new Date(searchParams.get('from')!) : undefined,
+      to: searchParams.get('to') ? new Date(searchParams.get('to')!) : undefined,
+      categoryId: searchParams.get('categoryId') || undefined,
+      accountId: searchParams.get('accountId') || undefined,
+      type: searchParams.get('type') || undefined,
+      q: searchParams.get('q') || undefined,
+    };
+
+    // Validate filters
+    const validatedFilters = transactionFiltersSchema.parse(filters);
+
+    // Fetch transactions
+    const result = await getTransactions(user.id, validatedFilters);
+
+    const duration = Date.now() - startTime;
+
+    logger.info('Transactions fetched successfully', {
+      route: '/api/transactions',
+      method: 'GET',
+      userId: user.id,
+      count: result.transactions.length,
+      total: result.total,
+      statusCode: 200,
+      duration,
+    });
+
+    return NextResponse.json({
+      data: result.transactions,
+      total: result.total,
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      logger.warn('Transaction filter validation error', {
+        route: '/api/transactions',
+        method: 'GET',
+        statusCode: 400,
+        duration,
+        errors: error.issues,
+      });
+
+      return NextResponse.json(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: error.issues[0]?.message || 'Validation failed',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle unexpected errors
+    logger.error(
+      'Transaction fetch internal error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        route: '/api/transactions',
+        method: 'GET',
+        statusCode: 500,
+        duration,
+      }
+    );
+
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch transactions',
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/transactions

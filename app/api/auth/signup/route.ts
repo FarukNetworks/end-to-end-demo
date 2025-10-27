@@ -4,7 +4,8 @@ import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { signupSchema } from '@/lib/validators';
 import { rateLimiters } from '@/lib/rate-limit';
-import { seedDefaultCategories, seedDefaultAccounts } from '@/prisma/seed';
+import { createDefaultCategories } from '@/lib/seed/categories';
+import { seedDefaultAccounts } from '@/lib/seed/accounts';
 import { ZodError } from 'zod';
 
 /**
@@ -29,9 +30,7 @@ export async function POST(req: NextRequest) {
     const signupRateLimit = await rateLimiters.signup(ip);
 
     if (!signupRateLimit.success) {
-      const retryAfter = Math.ceil(
-        (signupRateLimit.reset - Date.now()) / 1000
-      );
+      const retryAfter = Math.ceil((signupRateLimit.reset - Date.now()) / 1000);
 
       logger.warn('Signup rate limit exceeded', {
         route: '/api/auth/signup',
@@ -96,9 +95,9 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Create default categories and accounts
-      await seedDefaultCategories(tx, newUser.id);
-      await seedDefaultAccounts(tx, newUser.id);
+      // Create default categories and accounts (no duplicates expected for new user)
+      await createDefaultCategories(tx, newUser.id, false);
+      await seedDefaultAccounts(tx, newUser.id, false);
 
       return newUser;
     });
@@ -171,4 +170,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

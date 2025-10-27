@@ -13,12 +13,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TransactionFormFields } from './transaction-form-fields';
-import type { Transaction } from '@prisma/client';
+import type { Transaction, CategoryType } from '@prisma/client';
+
+type TransactionWithRelations = Transaction & {
+  category: { name: string; color: string; type: CategoryType };
+  account: { name: string };
+};
 
 interface TransactionDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transaction?: Transaction;
+  transaction?: TransactionWithRelations;
   mode: 'create' | 'edit';
 }
 
