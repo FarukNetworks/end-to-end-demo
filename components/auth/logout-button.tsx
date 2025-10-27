@@ -12,12 +12,12 @@ export function LogoutButton() {
     try {
       setIsLoading(true);
       await signOut({
-        callbackUrl: '/login',
-        redirect: true,
+        redirect: false,
       });
+      // Manually redirect to avoid HTTPS issues in development
+      window.location.href = '/login';
     } catch {
-      // signOut handles errors internally and redirects
-      // If it fails, reset the loading state
+      // If signOut fails, reset the loading state
       setIsLoading(false);
     }
   };

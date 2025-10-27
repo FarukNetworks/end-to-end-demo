@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { POST } from '@/app/api/auth/signup/route';
 import { db } from '@/lib/db';
 import { resetRateLimit } from '@/lib/rate-limit';

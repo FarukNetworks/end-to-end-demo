@@ -1,51 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { db } from '@/lib/db';
-import * as bcrypt from 'bcryptjs';
+import { describe, it, expect } from 'vitest';
 
 /**
  * Integration tests for protected route middleware
  * Tests the combination of NextAuth middleware and route protection
  */
 
-// Helper to create test user
-async function createTestUser(email: string, password: string, name?: string) {
-  const passwordHash = await bcrypt.hash(password, 10);
-  return await db.user.create({
-    data: {
-      email: email.toLowerCase(),
-      passwordHash,
-      name: name || null,
-    },
-  });
-}
-
-// Helper to clean up test user
-async function cleanupTestUser(email: string) {
-  const user = await db.user.findUnique({
-    where: { email: email.toLowerCase() },
-  });
-
-  if (user) {
-    // Delete child records first to respect foreign key constraints
-    await db.account.deleteMany({ where: { userId: user.id } });
-    await db.category.deleteMany({ where: { userId: user.id } });
-    await db.transaction.deleteMany({ where: { userId: user.id } });
-    await db.budget.deleteMany({ where: { userId: user.id } });
-    await db.user.delete({ where: { id: user.id } });
-  }
-}
-
 describe('Protected Route Middleware', () => {
-  const testEmail = 'middleware-test@example.com';
-  const testPassword = 'SecurePassword123';
-
-  beforeEach(async () => {
-    await cleanupTestUser(testEmail);
-  });
-
-  afterEach(async () => {
-    await cleanupTestUser(testEmail);
-  });
 
   describe('Public routes - accessible without authentication', () => {
     it('should allow access to home page (/) without authentication', () => {

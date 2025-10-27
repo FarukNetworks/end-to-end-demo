@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,11 +11,7 @@ import { toast } from '@/lib/toast';
 import { loginSchema, type LoginInput } from '@/lib/validators';
 
 export function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-
-  const from = searchParams.get('from') || '/';
 
   const {
     register,
@@ -38,17 +33,20 @@ export function LoginForm() {
 
       if (result?.error) {
         toast.error('Invalid email or password');
+        setIsLoading(false);
         return;
       }
 
       if (result?.ok) {
         toast.success('Logged in successfully!');
-        router.push(from);
-        router.refresh();
+        // Wait a bit for the session cookie to be set, then redirect
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 100);
       }
-    } catch {
+    } catch (error) {
+      console.error('Login error:', error);
       toast.error('Failed to log in. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

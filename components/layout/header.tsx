@@ -12,7 +12,7 @@ export async function Header() {
 
   return (
     <header className="border-b">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container mx-auto flex h-16 items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold">BudgetBuddy</h1>
         </div>

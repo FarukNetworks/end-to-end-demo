@@ -1,6 +1,12 @@
 import { PrismaClient, CategoryType, TxnType } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
+// Check if DATABASE_URL is available before proceeding
+if (!process.env.DATABASE_URL) {
+  console.log('⊘ DATABASE_URL not found - skipping seed (this is normal during build)');
+  process.exit(0);
+}
+
 const prisma = new PrismaClient();
 
 // Type for Prisma transaction client

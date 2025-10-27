@@ -1,12 +1,10 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { rateLimiters } from '@/lib/rate-limit';
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -23,12 +21,8 @@ export const authOptions: NextAuthOptions = {
         const loginRateLimit = await rateLimiters.login(credentials.email);
 
         if (!loginRateLimit.success) {
-          const retryAfter = Math.ceil(
-            (loginRateLimit.reset - Date.now()) / 1000
-          );
-          throw new Error(
-            `Too many login attempts. Try again in ${retryAfter} seconds.`
-          );
+          const retryAfter = Math.ceil((loginRateLimit.reset - Date.now()) / 1000);
+          throw new Error(`Too many login attempts. Try again in ${retryAfter} seconds.`);
         }
 
         // Find user by email (case-insensitive)
@@ -60,17 +54,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours
-  },
-  cookies: {
-    sessionToken: {
-      name: 'budgetbuddy.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
   },
   pages: {
     signIn: '/login',

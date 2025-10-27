@@ -59,8 +59,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       );
       expect(credentialsProvider).toBeDefined();
 
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
       expect(authorize).toBeDefined();
 
       // Call authorize with valid credentials
@@ -85,8 +84,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Try login with uppercase email
       const result = await authorize(
@@ -109,8 +107,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       const result = await authorize(
         {
@@ -135,8 +132,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Attempt login with wrong password
       await expect(
@@ -154,8 +150,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Attempt login with non-existent email (prevents email enumeration)
       await expect(
@@ -173,8 +168,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Attempt login without email
       await expect(
@@ -192,8 +186,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Attempt login without password
       await expect(
@@ -211,8 +204,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Attempt login without credentials
       await expect(
@@ -235,17 +227,14 @@ describe('NextAuth Login - Credentials Provider', () => {
       const jwtCallback = authOptions.callbacks?.jwt;
       expect(jwtCallback).toBeDefined();
 
-      const token = await jwtCallback!(
-        {
-          token: {} as any,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
+      const token = await jwtCallback!({
+        token: {} as any,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
         },
-        {} as any
-      );
+      } as any);
 
       expect(token.id).toBe(user.id);
       expect(token.email).toBe(user.email);
@@ -259,24 +248,21 @@ describe('NextAuth Login - Credentials Provider', () => {
       const sessionCallback = authOptions.callbacks?.session;
       expect(sessionCallback).toBeDefined();
 
-      const session = await sessionCallback!(
-        {
-          session: {
-            user: {} as any,
-            expires: new Date().toISOString(),
-          },
-          token: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          } as any,
+      const session = await sessionCallback!({
+        session: {
+          user: {} as any,
+          expires: new Date().toISOString(),
         },
-        {} as any
-      );
+        token: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        } as any,
+      } as any);
 
-      expect(session.user.id).toBe(user.id);
-      expect(session.user.email).toBe(user.email);
-      expect(session.user.name).toBe('Test User');
+      expect((session.user as any)?.id).toBe(user.id);
+      expect(session.user?.email).toBe(user.email);
+      expect(session.user?.name).toBe('Test User');
     });
   });
 
@@ -287,8 +273,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       const result = await authorize(
         {
@@ -299,8 +284,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       );
 
       expect(result).toBeDefined();
-      // @ts-expect-error - checking if passwordHash exists
-      expect(result?.passwordHash).toBeUndefined();
+      expect((result as any)?.passwordHash).toBeUndefined();
     });
 
     it('should use generic error message to prevent email enumeration', async () => {
@@ -309,8 +293,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Test wrong password
       try {
@@ -349,8 +332,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Successful verification
       const result = await authorize(
@@ -382,8 +364,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       const result = await authorize(
         {
@@ -405,8 +386,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Make 5 failed login attempts (wrong password)
       for (let i = 0; i < 5; i++) {
@@ -449,8 +429,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Make 5 attempts to trigger rate limit
       for (let i = 0; i < 5; i++) {
@@ -501,8 +480,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Make 5 failed attempts for email1
       for (let i = 0; i < 5; i++) {
@@ -539,8 +517,7 @@ describe('NextAuth Login - Credentials Provider', () => {
       const credentialsProvider = authOptions.providers.find(
         (provider) => provider.id === 'credentials'
       );
-      // @ts-expect-error - accessing authorize from provider
-      const authorize = credentialsProvider?.options?.authorize;
+      const authorize = (credentialsProvider as any)?.options?.authorize;
 
       // Make 5 successful login attempts
       for (let i = 0; i < 5; i++) {

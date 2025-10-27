@@ -5,9 +5,10 @@ import { PublicHeader } from '@/components/layout/public-header';
 import { FeatureCard } from '@/components/landing/feature-card';
 import { Button } from '@/components/ui/button';
 import { Shield, Zap, PieChart } from 'lucide-react';
+import { authOptions } from '@/lib/auth';
 
 export default async function HomePage() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
 
   // Redirect authenticated users to dashboard
   if (session) {

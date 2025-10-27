@@ -116,8 +116,7 @@ describe('Logger', () => {
 
   describe('debug', () => {
     it('should log in development mode', () => {
-      const oldEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
 
       logger.debug('Debug message');
 
@@ -127,19 +126,14 @@ describe('Logger', () => {
 
       expect(parsed.level).toBe('debug');
       expect(parsed.message).toBe('Debug message');
-
-      process.env.NODE_ENV = oldEnv;
     });
 
     it('should not log in production mode', () => {
-      const oldEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
 
       logger.debug('Debug message');
 
       expect(console.debug).not.toHaveBeenCalled();
-
-      process.env.NODE_ENV = oldEnv;
     });
   });
 });

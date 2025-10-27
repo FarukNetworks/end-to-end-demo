@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('Environment Configuration', () => {
   const originalEnv = process.env;
@@ -20,7 +20,7 @@ describe('Environment Configuration', () => {
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'a'.repeat(32);
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
 
     const { env } = await import('@/lib/env');
 
@@ -35,7 +35,7 @@ describe('Environment Configuration', () => {
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'a'.repeat(32);
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
     process.env.ENABLE_BUDGETS = 'true';
     process.env.ENABLE_CSV_EXPORT = 'false';
 
@@ -52,7 +52,7 @@ describe('Environment Configuration', () => {
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'a'.repeat(32);
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
 
     const { env } = await import('@/lib/env');
 
@@ -66,7 +66,7 @@ describe('Environment Configuration', () => {
     process.env.DATABASE_URL = 'invalid-url';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'a'.repeat(32);
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
 
     await expect(async () => {
       await import('@/lib/env');
@@ -77,7 +77,7 @@ describe('Environment Configuration', () => {
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'tooshort';
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
 
     await expect(async () => {
       await import('@/lib/env');
@@ -95,7 +95,7 @@ describe('Feature Flags', () => {
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'a'.repeat(32);
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
   });
 
   afterEach(() => {

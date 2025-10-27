@@ -281,8 +281,8 @@ describe('User Scoping Enforcement', () => {
       });
 
       expect(transactions).toHaveLength(1);
-      expect(transactions[0].category.id).toBe(user1Data.category.id);
-      expect(transactions[0].account.id).toBe(user1Data.account.id);
+      expect((transactions[0] as any).category.id).toBe(user1Data.category.id);
+      expect((transactions[0] as any).account.id).toBe(user1Data.account.id);
     });
   });
 
