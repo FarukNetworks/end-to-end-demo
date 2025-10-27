@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 
 /**
  * Creates scoped database query helpers that automatically enforce user isolation.
@@ -20,7 +21,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Find many transactions for the current user
        */
-      findMany: (args?: any) =>
+      findMany: (
+        args?: Omit<Prisma.TransactionFindManyArgs, 'where'> & {
+          where?: Omit<Prisma.TransactionWhereInput, 'userId'>;
+        }
+      ) =>
         db.transaction.findMany({
           ...args,
           where: { ...args?.where, userId },
@@ -38,7 +43,7 @@ export function createScopedQueries(userId: string) {
       /**
        * Create a transaction for the current user
        */
-      create: (data: any) =>
+      create: (data: Omit<Prisma.TransactionCreateInput, 'user'>) =>
         db.transaction.create({
           data: {
             ...data,
@@ -50,7 +55,7 @@ export function createScopedQueries(userId: string) {
        * Update a transaction (only if it belongs to current user)
        * Returns { count: 0 } if transaction doesn't exist or belongs to another user
        */
-      update: (id: string, data: any) =>
+      update: (id: string, data: Prisma.TransactionUpdateInput) =>
         db.transaction.updateMany({
           where: { id, userId },
           data,
@@ -68,7 +73,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Count transactions for the current user
        */
-      count: (args?: any) =>
+      count: (
+        args?: Omit<Prisma.TransactionCountArgs, 'where'> & {
+          where?: Omit<Prisma.TransactionWhereInput, 'userId'>;
+        }
+      ) =>
         db.transaction.count({
           ...args,
           where: { ...args?.where, userId },
@@ -80,7 +89,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Find many categories for the current user
        */
-      findMany: (args?: any) =>
+      findMany: (
+        args?: Omit<Prisma.CategoryFindManyArgs, 'where'> & {
+          where?: Omit<Prisma.CategoryWhereInput, 'userId'>;
+        }
+      ) =>
         db.category.findMany({
           ...args,
           where: { ...args?.where, userId },
@@ -98,7 +111,7 @@ export function createScopedQueries(userId: string) {
       /**
        * Create a category for the current user
        */
-      create: (data: any) =>
+      create: (data: Omit<Prisma.CategoryCreateInput, 'user'>) =>
         db.category.create({
           data: {
             ...data,
@@ -110,7 +123,7 @@ export function createScopedQueries(userId: string) {
        * Update a category (only if it belongs to current user)
        * Returns { count: 0 } if category doesn't exist or belongs to another user
        */
-      update: (id: string, data: any) =>
+      update: (id: string, data: Prisma.CategoryUpdateInput) =>
         db.category.updateMany({
           where: { id, userId },
           data,
@@ -128,7 +141,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Count categories for the current user
        */
-      count: (args?: any) =>
+      count: (
+        args?: Omit<Prisma.CategoryCountArgs, 'where'> & {
+          where?: Omit<Prisma.CategoryWhereInput, 'userId'>;
+        }
+      ) =>
         db.category.count({
           ...args,
           where: { ...args?.where, userId },
@@ -140,7 +157,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Find many accounts for the current user
        */
-      findMany: (args?: any) =>
+      findMany: (
+        args?: Omit<Prisma.AccountFindManyArgs, 'where'> & {
+          where?: Omit<Prisma.AccountWhereInput, 'userId'>;
+        }
+      ) =>
         db.account.findMany({
           ...args,
           where: { ...args?.where, userId },
@@ -158,7 +179,7 @@ export function createScopedQueries(userId: string) {
       /**
        * Create an account for the current user
        */
-      create: (data: any) =>
+      create: (data: Omit<Prisma.AccountCreateInput, 'user'>) =>
         db.account.create({
           data: {
             ...data,
@@ -170,7 +191,7 @@ export function createScopedQueries(userId: string) {
        * Update an account (only if it belongs to current user)
        * Returns { count: 0 } if account doesn't exist or belongs to another user
        */
-      update: (id: string, data: any) =>
+      update: (id: string, data: Prisma.AccountUpdateInput) =>
         db.account.updateMany({
           where: { id, userId },
           data,
@@ -188,7 +209,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Count accounts for the current user
        */
-      count: (args?: any) =>
+      count: (
+        args?: Omit<Prisma.AccountCountArgs, 'where'> & {
+          where?: Omit<Prisma.AccountWhereInput, 'userId'>;
+        }
+      ) =>
         db.account.count({
           ...args,
           where: { ...args?.where, userId },
@@ -200,7 +225,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Find many budgets for the current user
        */
-      findMany: (args?: any) =>
+      findMany: (
+        args?: Omit<Prisma.BudgetFindManyArgs, 'where'> & {
+          where?: Omit<Prisma.BudgetWhereInput, 'userId'>;
+        }
+      ) =>
         db.budget.findMany({
           ...args,
           where: { ...args?.where, userId },
@@ -218,7 +247,7 @@ export function createScopedQueries(userId: string) {
       /**
        * Create a budget for the current user
        */
-      create: (data: any) =>
+      create: (data: Omit<Prisma.BudgetCreateInput, 'user'>) =>
         db.budget.create({
           data: {
             ...data,
@@ -230,7 +259,7 @@ export function createScopedQueries(userId: string) {
        * Update a budget (only if it belongs to current user)
        * Returns { count: 0 } if budget doesn't exist or belongs to another user
        */
-      update: (id: string, data: any) =>
+      update: (id: string, data: Prisma.BudgetUpdateInput) =>
         db.budget.updateMany({
           where: { id, userId },
           data,
@@ -248,7 +277,11 @@ export function createScopedQueries(userId: string) {
       /**
        * Count budgets for the current user
        */
-      count: (args?: any) =>
+      count: (
+        args?: Omit<Prisma.BudgetCountArgs, 'where'> & {
+          where?: Omit<Prisma.BudgetWhereInput, 'userId'>;
+        }
+      ) =>
         db.budget.count({
           ...args,
           where: { ...args?.where, userId },

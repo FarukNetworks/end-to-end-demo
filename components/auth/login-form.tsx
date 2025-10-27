@@ -46,7 +46,7 @@ export function LoginForm() {
         router.push(from);
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to log in. Please try again.');
     } finally {
       setIsLoading(false);

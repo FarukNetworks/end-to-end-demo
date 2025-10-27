@@ -1,5 +1,6 @@
 import { LoginForm } from '@/components/auth/login-form';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 export const metadata = {
   title: 'Log In - BudgetBuddy',
@@ -14,7 +15,9 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold">Welcome back</h1>
           <p className="text-muted-foreground">Log in to your account to continue</p>
         </div>
-        <LoginForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <LoginForm />
+        </Suspense>
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="font-medium text-primary hover:underline">

@@ -59,7 +59,7 @@ export default async function HomePage() {
               Finance Tracking, Done Right
             </h2>
             <p className="text-lg text-muted-foreground">
-              Everything you need to understand your spending, nothing you don't.
+              Everything you need to understand your spending, nothing you don&apos;t.
             </p>
           </div>
 
