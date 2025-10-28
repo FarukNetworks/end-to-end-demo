@@ -6,7 +6,6 @@ import { describe, it, expect } from 'vitest';
  */
 
 describe('Protected Route Middleware', () => {
-
   describe('Public routes - accessible without authentication', () => {
     it('should allow access to home page (/) without authentication', () => {
       // Home page should be public per user requirement

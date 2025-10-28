@@ -43,7 +43,7 @@ export async function rateLimit(
   const attempts = tokenCache.get(identifier) || [];
 
   // Filter attempts within window
-  const recentAttempts = attempts.filter(time => time > windowStart);
+  const recentAttempts = attempts.filter((time) => time > windowStart);
 
   if (recentAttempts.length >= config.maxAttempts) {
     const oldestAttempt = Math.min(...recentAttempts);

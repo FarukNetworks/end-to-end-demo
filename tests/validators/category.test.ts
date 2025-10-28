@@ -256,6 +256,7 @@ describe('Category Validation Schemas', () => {
       it('should infer correct TypeScript type for CreateCategoryInput', () => {
         const input: CreateCategoryInput = {
           name: 'Test',
+          color: '#22c55e',
           type: CategoryType.expense,
         };
 
@@ -317,7 +318,7 @@ describe('Category Validation Schemas', () => {
         });
 
         expect(result.name).toBe(longName);
-        expect(result.name.length).toBe(50);
+        expect(result.name?.length).toBe(50);
       });
     });
 

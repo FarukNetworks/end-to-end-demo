@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { NextRequest, NextResponse } from 'next/server';
 import { DELETE } from '@/app/api/transactions/[id]/route';
 import { db } from '@/lib/db';
 import { requireApiAuth } from '@/lib/api-auth';
@@ -37,13 +38,13 @@ describe('DELETE /api/transactions/:id', () => {
   it('should delete transaction and return 204', async () => {
     vi.mocked(db.transaction.deleteMany).mockResolvedValue({ count: 1 });
 
-    const req = new Request(
+    const req = new NextRequest(
       'http://localhost/api/transactions/550e8400-e29b-41d4-a716-446655440000',
       { method: 'DELETE' }
     );
 
     const response = await DELETE(req, {
-      params: { id: '550e8400-e29b-41d4-a716-446655440000' },
+      params: Promise.resolve({ id: '550e8400-e29b-41d4-a716-446655440000' }),
     });
 
     expect(response.status).toBe(204);
@@ -62,13 +63,13 @@ describe('DELETE /api/transactions/:id', () => {
   it('should return 404 for transaction belonging to different user', async () => {
     vi.mocked(db.transaction.deleteMany).mockResolvedValue({ count: 0 });
 
-    const req = new Request(
+    const req = new NextRequest(
       'http://localhost/api/transactions/550e8400-e29b-41d4-a716-446655440099',
       { method: 'DELETE' }
     );
 
     const response = await DELETE(req, {
-      params: { id: '550e8400-e29b-41d4-a716-446655440099' },
+      params: Promise.resolve({ id: '550e8400-e29b-41d4-a716-446655440099' }),
     });
     const data = await response.json();
 
@@ -80,12 +81,12 @@ describe('DELETE /api/transactions/:id', () => {
   it('should return 404 for non-existent transaction ID', async () => {
     vi.mocked(db.transaction.deleteMany).mockResolvedValue({ count: 0 });
 
-    const req = new Request('http://localhost/api/transactions/non-existent-id', {
+    const req = new NextRequest('http://localhost/api/transactions/non-existent-id', {
       method: 'DELETE',
     });
 
     const response = await DELETE(req, {
-      params: { id: 'non-existent-id' },
+      params: Promise.resolve({ id: 'non-existent-id' }),
     });
     const data = await response.json();
 
@@ -98,11 +99,11 @@ describe('DELETE /api/transactions/:id', () => {
     vi.mocked(db.transaction.deleteMany).mockResolvedValue({ count: 1 });
 
     const transactionId = '550e8400-e29b-41d4-a716-446655440000';
-    const req = new Request(`http://localhost/api/transactions/${transactionId}`, {
+    const req = new NextRequest(`http://localhost/api/transactions/${transactionId}`, {
       method: 'DELETE',
     });
 
-    await DELETE(req, { params: { id: transactionId } });
+    await DELETE(req, { params: Promise.resolve({ id: transactionId }) });
 
     expect(db.transaction.deleteMany).toHaveBeenCalledWith({
       where: {
@@ -114,22 +115,22 @@ describe('DELETE /api/transactions/:id', () => {
 
   it('should return 401 when unauthenticated', async () => {
     vi.mocked(requireApiAuth).mockResolvedValue({
-      error: new Response(
-        JSON.stringify({
+      error: NextResponse.json(
+        {
           error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-        }),
+        },
         { status: 401 }
       ),
       user: null,
     });
 
-    const req = new Request(
+    const req = new NextRequest(
       'http://localhost/api/transactions/550e8400-e29b-41d4-a716-446655440000',
       { method: 'DELETE' }
     );
 
     const response = await DELETE(req, {
-      params: { id: '550e8400-e29b-41d4-a716-446655440000' },
+      params: Promise.resolve({ id: '550e8400-e29b-41d4-a716-446655440000' }),
     });
     const data = await response.json();
 
@@ -140,13 +141,13 @@ describe('DELETE /api/transactions/:id', () => {
   it('should handle internal errors gracefully', async () => {
     vi.mocked(db.transaction.deleteMany).mockRejectedValue(new Error('Database connection failed'));
 
-    const req = new Request(
+    const req = new NextRequest(
       'http://localhost/api/transactions/550e8400-e29b-41d4-a716-446655440000',
       { method: 'DELETE' }
     );
 
     const response = await DELETE(req, {
-      params: { id: '550e8400-e29b-41d4-a716-446655440000' },
+      params: Promise.resolve({ id: '550e8400-e29b-41d4-a716-446655440000' }),
     });
     const data = await response.json();
 
@@ -162,19 +163,19 @@ describe('DELETE /api/transactions/:id', () => {
     vi.mocked(db.transaction.deleteMany).mockResolvedValueOnce({ count: 0 });
 
     const transactionId = '550e8400-e29b-41d4-a716-446655440000';
-    const req1 = new Request(`http://localhost/api/transactions/${transactionId}`, {
+    const req1 = new NextRequest(`http://localhost/api/transactions/${transactionId}`, {
       method: 'DELETE',
     });
 
     // First deletion
-    const response1 = await DELETE(req1, { params: { id: transactionId } });
+    const response1 = await DELETE(req1, { params: Promise.resolve({ id: transactionId }) });
     expect(response1.status).toBe(204);
 
     // Attempt to delete same transaction again
-    const req2 = new Request(`http://localhost/api/transactions/${transactionId}`, {
+    const req2 = new NextRequest(`http://localhost/api/transactions/${transactionId}`, {
       method: 'DELETE',
     });
-    const response2 = await DELETE(req2, { params: { id: transactionId } });
+    const response2 = await DELETE(req2, { params: Promise.resolve({ id: transactionId }) });
     const data2 = await response2.json();
 
     expect(response2.status).toBe(404);

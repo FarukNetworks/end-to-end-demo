@@ -31,7 +31,6 @@ describe('CategoryDialog', () => {
     isSystem: false,
     userId: 'user-1',
     createdAt: new Date(),
-    updatedAt: new Date(),
     _count: { txns: 5 },
   };
 
@@ -190,7 +189,6 @@ describe('CategoryDialog', () => {
     });
 
     it('allows using native color picker', async () => {
-      const user = userEvent.setup();
       render(
         <CategoryDialog
           open={true}

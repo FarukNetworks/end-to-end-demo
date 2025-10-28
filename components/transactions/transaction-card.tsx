@@ -32,7 +32,7 @@ export function TransactionCard({
 
   return (
     <div
-      className="bg-card flex cursor-pointer gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+      className="flex cursor-pointer gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
       onClick={onClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
