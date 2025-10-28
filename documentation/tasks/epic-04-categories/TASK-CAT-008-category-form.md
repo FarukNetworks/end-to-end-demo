@@ -216,13 +216,14 @@ export function ColorPicker({ value, onChange }) {
 
 ## Definition of Done
 
-- [ ] CategoryFormDialog created
-- [ ] ColorPicker component created
-- [ ] Name, type, color fields
-- [ ] Create and edit modes
-- [ ] Type immutable in edit mode
-- [ ] Form validation
-- [ ] API integration
+- [x] CategoryFormDialog created (implemented as `CategoryDialog`)
+- [x] ColorPicker component created (inline color picker with presets)
+- [x] Name, type, color fields
+- [x] Create and edit modes
+- [x] Type immutable in edit mode
+- [x] Form validation
+- [x] API integration
+- [x] Component tests created (22 tests covering all acceptance criteria)
 
 ## Dependencies
 

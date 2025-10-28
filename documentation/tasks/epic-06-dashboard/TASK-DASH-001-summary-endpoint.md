@@ -34,12 +34,8 @@ export async function GET(req: Request) {
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
-  const from = searchParams.get('from')
-    ? new Date(searchParams.get('from')!)
-    : undefined;
-  const to = searchParams.get('to')
-    ? new Date(searchParams.get('to')!)
-    : undefined;
+  const from = searchParams.get('from') ? new Date(searchParams.get('from')!) : undefined;
+  const to = searchParams.get('to') ? new Date(searchParams.get('to')!) : undefined;
 
   const transactions = await db.transaction.findMany({
     where: {
@@ -54,11 +50,11 @@ export async function GET(req: Request) {
   });
 
   const totalIncome = transactions
-    .filter(t => t.type === 'income')
+    .filter((t) => t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalExpense = transactions
-    .filter(t => t.type === 'expense')
+    .filter((t) => t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const net = totalIncome - totalExpense;
@@ -92,12 +88,12 @@ export async function GET(req: Request) {
 
 ## Definition of Done
 
-- [ ] GET endpoint implemented
-- [ ] Date range filtering
-- [ ] Calculate totalIncome, totalExpense, net, count
-- [ ] Decimal precision (2 places)
-- [ ] User scoping
-- [ ] Integration tests with various scenarios
+- [x] GET endpoint implemented
+- [x] Date range filtering
+- [x] Calculate totalIncome, totalExpense, net, count
+- [x] Decimal precision (2 places)
+- [x] User scoping
+- [x] Integration tests with various scenarios
 
 ## Dependencies
 

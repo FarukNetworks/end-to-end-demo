@@ -67,7 +67,7 @@ describe('GET /api/categories', () => {
   describe('Successful category retrieval', () => {
     it('should return all user categories with transaction counts', async () => {
       // Create test categories
-      const expenseCategory = await db.category.create({
+      await db.category.create({
         data: {
           userId: testUser.id,
           name: 'Groceries',
@@ -77,7 +77,7 @@ describe('GET /api/categories', () => {
         },
       });
 
-      const incomeCategory = await db.category.create({
+      await db.category.create({
         data: {
           userId: testUser.id,
           name: 'Salary',

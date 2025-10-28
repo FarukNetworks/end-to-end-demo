@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireApiAuth } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
-import { createCategorySchema } from '@/lib/validators/category';
+import { createAccountSchema } from '@/lib/validators/account';
+import { getAccountsWithBalances } from '@/lib/queries/accounts';
 import { ZodError } from 'zod';
 
 /**
- * GET /api/categories
- * Fetch all categories (system + custom) for authenticated user
+ * GET /api/accounts
+ * Fetch all accounts with calculated balances for authenticated user
  *
- * FR-017: Categories list
- * Returns categories ordered by type (expense first), then name
- * Includes transaction count for each category
+ * FR-027: Accounts list with balances
+ * US-011: See derived account balances
  */
 export async function GET(_req: NextRequest) {
   const startTime = Date.now();
@@ -21,38 +21,30 @@ export async function GET(_req: NextRequest) {
     const { error, user } = await requireApiAuth();
     if (error) return error;
 
-    // Fetch categories with transaction counts
-    const categories = await db.category.findMany({
-      where: { userId: user.id },
-      orderBy: [{ type: 'asc' }, { name: 'asc' }],
-      include: {
-        _count: {
-          select: { txns: true },
-        },
-      },
-    });
+    // Fetch accounts with calculated balances
+    const accountsWithBalances = await getAccountsWithBalances(user.id);
 
     const duration = Date.now() - startTime;
 
-    logger.info('Categories fetched successfully', {
-      route: '/api/categories',
+    logger.info('Accounts fetched successfully', {
+      route: '/api/accounts',
       method: 'GET',
       userId: user.id,
-      count: categories.length,
+      count: accountsWithBalances.length,
       statusCode: 200,
       duration,
     });
 
-    return NextResponse.json({ data: categories });
+    return NextResponse.json({ data: accountsWithBalances });
   } catch (error) {
     const duration = Date.now() - startTime;
 
     // Handle unexpected errors
     logger.error(
-      'Categories fetch internal error',
+      'Accounts fetch internal error',
       error instanceof Error ? error : new Error(String(error)),
       {
-        route: '/api/categories',
+        route: '/api/accounts',
         method: 'GET',
         statusCode: 500,
         duration,
@@ -63,7 +55,7 @@ export async function GET(_req: NextRequest) {
       {
         error: {
           code: 'INTERNAL_ERROR',
-          message: 'Failed to fetch categories',
+          message: 'Failed to fetch accounts',
         },
       },
       { status: 500 }
@@ -72,11 +64,11 @@ export async function GET(_req: NextRequest) {
 }
 
 /**
- * POST /api/categories
- * Create a new custom category
+ * POST /api/accounts
+ * Create a new account
  *
- * FR-019: Create custom categories
- * FR-020: Unique name validation (case-insensitive)
+ * FR-029: Create account
+ * US-ACC-01: Track transactions across multiple accounts
  */
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -88,10 +80,10 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate request body
     const body = await req.json();
-    const validatedData = createCategorySchema.parse(body);
+    const validatedData = createAccountSchema.parse(body);
 
     // Check for duplicate name (case-insensitive)
-    const existing = await db.category.findFirst({
+    const existing = await db.account.findFirst({
       where: {
         userId: user.id,
         name: {
@@ -102,8 +94,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      logger.warn('Duplicate category name', {
-        route: '/api/categories',
+      logger.warn('Duplicate account name', {
+        route: '/api/accounts',
         method: 'POST',
         userId: user.id,
         name: validatedData.name,
@@ -113,43 +105,41 @@ export async function POST(req: NextRequest) {
         {
           error: {
             code: 'DUPLICATE_NAME',
-            message: 'Category name already exists',
+            message: 'Account name already exists',
           },
         },
         { status: 409 }
       );
     }
 
-    // Create category
-    const category = await db.category.create({
+    // Create account
+    const account = await db.account.create({
       data: {
         userId: user.id,
         name: validatedData.name,
-        color: validatedData.color || '#22c55e',
-        type: validatedData.type,
-        isSystem: false,
+        color: validatedData.color || '#6b7280',
       },
     });
 
     const duration = Date.now() - startTime;
 
-    logger.info('Category created successfully', {
-      route: '/api/categories',
+    logger.info('Account created successfully', {
+      route: '/api/accounts',
       method: 'POST',
       userId: user.id,
-      categoryId: category.id,
+      accountId: account.id,
       statusCode: 201,
       duration,
     });
 
-    return NextResponse.json({ data: category }, { status: 201 });
+    return NextResponse.json({ data: account }, { status: 201 });
   } catch (error) {
     const duration = Date.now() - startTime;
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
-      logger.warn('Category validation error', {
-        route: '/api/categories',
+      logger.warn('Account validation error', {
+        route: '/api/accounts',
         method: 'POST',
         statusCode: 400,
         duration,
@@ -169,10 +159,10 @@ export async function POST(req: NextRequest) {
 
     // Handle unexpected errors
     logger.error(
-      'Category creation internal error',
+      'Account creation internal error',
       error instanceof Error ? error : new Error(String(error)),
       {
-        route: '/api/categories',
+        route: '/api/accounts',
         method: 'POST',
         statusCode: 500,
         duration,
@@ -183,7 +173,7 @@ export async function POST(req: NextRequest) {
       {
         error: {
           code: 'INTERNAL_ERROR',
-          message: 'Failed to create category',
+          message: 'Failed to create account',
         },
       },
       { status: 500 }

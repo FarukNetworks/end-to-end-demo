@@ -1,49 +1,37 @@
-'use client';
+import { requireAuth } from '@/lib/auth-helpers';
+import { KPICards } from '@/components/dashboard/kpi-cards';
+import { CategoryBreakdownChart } from '@/components/dashboard/category-breakdown';
+import { CashFlowChart } from '@/components/dashboard/cashflow-chart';
+import { DateRangeFilter } from '@/components/dashboard/date-range-filter';
 
-import { useTransactions } from '@/hooks/use-transactions';
-import { TransactionList } from '@/components/transactions/transaction-list';
-import { AddTransactionButton } from '@/components/transactions/add-transaction-button';
-import { Spinner } from '@/components/ui/spinner';
-import { EmptyState } from '@/components/empty-state';
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>;
+}) {
+  await requireAuth();
 
-export default function DashboardPage() {
-  const { transactions, isLoading, error } = useTransactions();
+  const params = await searchParams;
 
-  if (error) {
-    return (
-      <div className="container py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
-            <h2 className="mb-2 text-xl font-semibold text-destructive">
-              Error loading transactions
-            </h2>
-            <p className="text-muted-foreground">{error.message}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Default to "This Month" - using UTC to avoid timezone issues
+  const now = new Date();
+  const from =
+    params.from ||
+    new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1)).toISOString().slice(0, 10);
+  const to = params.to || now.toISOString().slice(0, 10);
 
   return (
-    <div className="container py-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Transactions</h1>
-          <AddTransactionButton />
-        </div>
+    <div className="container mx-auto space-y-8 py-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <DateRangeFilter />
+      </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Spinner size="lg" />
-          </div>
-        ) : transactions.length === 0 ? (
-          <EmptyState
-            title="No transactions yet"
-            description="Get started by adding your first transaction"
-          />
-        ) : (
-          <TransactionList transactions={transactions} />
-        )}
+      <KPICards from={from} to={to} />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <CategoryBreakdownChart from={from} to={to} />
+        <CashFlowChart />
       </div>
     </div>
   );

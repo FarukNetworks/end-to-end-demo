@@ -1,17 +1,6 @@
 'use client';
 
-/**
- * AccountSelect Component (Placeholder)
- *
- * This is a placeholder component with mock data.
- * Full implementation will be done in TASK-ACC-007 or related account tasks which includes:
- * - Fetching accounts from GET /api/accounts
- * - Real-time account data
- * - Account creation integration
- *
- * For now, this uses hardcoded mock accounts to unblock transaction form development.
- */
-
+import { useEffect, useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -19,20 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Account {
   id: string;
   name: string;
   color: string;
 }
-
-// Mock accounts - will be replaced with API fetch in account management tasks
-const MOCK_ACCOUNTS: Account[] = [
-  { id: 'acc-1', name: 'Cash', color: '#10b981' },
-  { id: 'acc-2', name: 'Credit Card', color: '#3b82f6' },
-  { id: 'acc-3', name: 'Checking Account', color: '#8b5cf6' },
-  { id: 'acc-4', name: 'Savings Account', color: '#f59e0b' },
-];
 
 interface AccountSelectProps {
   value: string;
@@ -47,7 +29,49 @@ export function AccountSelect({
   placeholder = 'Select account...',
   disabled = false,
 }: AccountSelectProps) {
-  const selectedAccount = MOCK_ACCOUNTS.find((a) => a.id === value);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch('/api/accounts');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || 'Failed to fetch accounts');
+        }
+        const result = await response.json();
+        setAccounts(result.data || []);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load accounts');
+        console.error('Error fetching accounts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, []);
+
+  if (loading) {
+    return <Skeleton className="h-9 w-full" />;
+  }
+
+  if (error) {
+    return <div className="text-sm text-destructive">{error}</div>;
+  }
+
+  if (accounts.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        No accounts available. Please create an account first.
+      </div>
+    );
+  }
+
+  const selectedAccount = accounts.find((a) => a.id === value);
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
@@ -65,7 +89,7 @@ export function AccountSelect({
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {MOCK_ACCOUNTS.map((account) => (
+        {accounts.map((account) => (
           <SelectItem key={account.id} value={account.id}>
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: account.color }} />

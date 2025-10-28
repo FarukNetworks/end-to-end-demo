@@ -1,17 +1,7 @@
 'use client';
 
-/**
- * CategorySelect Component (Placeholder)
- *
- * This is a placeholder component with mock data.
- * Full implementation will be done in TASK-CAT-010 which includes:
- * - Fetching categories from GET /api/categories
- * - Real-time category data
- * - Category creation integration
- *
- * For now, this uses hardcoded mock categories to unblock transaction form development.
- */
-
+import { useState, useEffect } from 'react';
+import { Category, CategoryType } from '@prisma/client';
 import {
   Select,
   SelectContent,
@@ -21,28 +11,6 @@ import {
   SelectGroup,
   SelectLabel,
 } from '@/components/ui/select';
-
-interface Category {
-  id: string;
-  name: string;
-  color: string;
-  type: 'expense' | 'income';
-}
-
-// Mock categories - will be replaced with API fetch in TASK-CAT-010
-const MOCK_CATEGORIES: Category[] = [
-  // Expense categories
-  { id: 'cat-1', name: 'Groceries', color: '#ef4444', type: 'expense' },
-  { id: 'cat-2', name: 'Transportation', color: '#f59e0b', type: 'expense' },
-  { id: 'cat-3', name: 'Entertainment', color: '#8b5cf6', type: 'expense' },
-  { id: 'cat-4', name: 'Utilities', color: '#3b82f6', type: 'expense' },
-  { id: 'cat-5', name: 'Healthcare', color: '#ec4899', type: 'expense' },
-  { id: 'cat-6', name: 'Dining Out', color: '#f97316', type: 'expense' },
-  // Income categories
-  { id: 'cat-7', name: 'Salary', color: '#22c55e', type: 'income' },
-  { id: 'cat-8', name: 'Freelance', color: '#10b981', type: 'income' },
-  { id: 'cat-9', name: 'Investments', color: '#14b8a6', type: 'income' },
-];
 
 interface CategorySelectProps {
   value: string;
@@ -59,15 +27,74 @@ export function CategorySelect({
   placeholder = 'Select category...',
   disabled = false,
 }: CategorySelectProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const data = await response.json();
+        setCategories(data.data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load categories');
+        setCategories([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchCategories();
+  }, []);
+
   // Filter categories by type if specified
-  const filteredCategories = type
-    ? MOCK_CATEGORIES.filter((c) => c.type === type)
-    : MOCK_CATEGORIES;
+  const filteredCategories = type ? categories.filter((c) => c.type === type) : categories;
 
-  const expenseCategories = filteredCategories.filter((c) => c.type === 'expense');
-  const incomeCategories = filteredCategories.filter((c) => c.type === 'income');
+  const expenseCategories = filteredCategories.filter((c) => c.type === CategoryType.expense);
+  const incomeCategories = filteredCategories.filter((c) => c.type === CategoryType.income);
 
-  const selectedCategory = MOCK_CATEGORIES.find((c) => c.id === value);
+  const selectedCategory = categories.find((c) => c.id === value);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Select disabled>
+        <SelectTrigger>
+          <SelectValue placeholder="Loading categories..." />
+        </SelectTrigger>
+      </Select>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Select disabled>
+        <SelectTrigger>
+          <SelectValue placeholder="Error loading categories" />
+        </SelectTrigger>
+      </Select>
+    );
+  }
+
+  // Show empty state
+  if (categories.length === 0) {
+    return (
+      <Select disabled>
+        <SelectTrigger>
+          <SelectValue placeholder="No categories available" />
+        </SelectTrigger>
+      </Select>
+    );
+  }
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>

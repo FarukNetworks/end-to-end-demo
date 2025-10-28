@@ -145,12 +145,12 @@ export function CategorySelect({
 
 ## Definition of Done
 
-- [ ] CategorySelect component created
-- [ ] Color swatches (12px circles)
-- [ ] Grouped by type
-- [ ] Type filtering prop
-- [ ] Fetches categories from API
-- [ ] Accessible (keyboard navigation)
+- [x] CategorySelect component created
+- [x] Color swatches (12px circles)
+- [x] Grouped by type
+- [x] Type filtering prop
+- [x] Fetches categories from API
+- [x] Accessible (keyboard navigation)
 
 ## Dependencies
 

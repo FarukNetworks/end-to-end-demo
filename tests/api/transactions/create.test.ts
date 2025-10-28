@@ -3,7 +3,6 @@ import { POST } from '@/app/api/transactions/route';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import * as bcrypt from 'bcryptjs';
-import { TxnType } from '@prisma/client';
 
 // Mock next-auth
 vi.mock('next-auth', () => ({

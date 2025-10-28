@@ -1,7 +1,8 @@
 import { getServerSession } from 'next-auth';
+import Link from 'next/link';
 import { authOptions } from '@/lib/auth';
-import { LogoutButton } from '@/components/auth/logout-button';
 import { AddTransactionButton } from '@/components/transactions/add-transaction-button';
+import { UserMenu } from './user-menu';
 
 export async function Header() {
   const session = await getServerSession(authOptions);
@@ -14,13 +15,20 @@ export async function Header() {
   return (
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <h1 className="text-xl font-bold">BudgetBuddy</h1>
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Dashboard
+            </Link>
+          </nav>
         </div>
         <div className="flex items-center gap-4">
           <AddTransactionButton />
-          <span className="text-sm text-muted-foreground">{session.user.email}</span>
-          <LogoutButton />
+          <UserMenu userEmail={session.user.email || ''} />
         </div>
       </div>
     </header>

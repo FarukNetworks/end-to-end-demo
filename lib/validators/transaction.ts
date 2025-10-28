@@ -17,7 +17,9 @@ export const createTransactionSchema = z.object({
   type: z.nativeEnum(TxnType, {
     message: 'Type must be expense or income',
   }),
-  txnDate: z.coerce.date().max(new Date(), 'Transaction date cannot be in the future'),
+  txnDate: z.coerce.date().refine((date) => date <= new Date(), {
+    message: 'Transaction date cannot be in the future',
+  }),
   categoryId: z.string().uuid('Invalid category ID'),
   accountId: z.string().uuid('Invalid account ID'),
   note: z.string().max(500, 'Note too long (max 500 characters)').optional(),
@@ -46,7 +48,12 @@ export const updateTransactionSchema = z
         message: 'Type must be expense or income',
       })
       .optional(),
-    txnDate: z.coerce.date().max(new Date(), 'Transaction date cannot be in the future').optional(),
+    txnDate: z.coerce
+      .date()
+      .refine((date) => date <= new Date(), {
+        message: 'Transaction date cannot be in the future',
+      })
+      .optional(),
     categoryId: z.string().uuid('Invalid category ID').optional(),
     accountId: z.string().uuid('Invalid account ID').optional(),
     note: z.string().max(500, 'Note too long (max 500 characters)').optional().nullable(),

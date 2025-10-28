@@ -41,14 +41,7 @@ export async function GET(req: Request) {
 
   for (let i = 0; i < months; i++) {
     const monthStart = new Date(start.getFullYear(), start.getMonth() + i, 1);
-    const monthEnd = new Date(
-      start.getFullYear(),
-      start.getMonth() + i + 1,
-      0,
-      23,
-      59,
-      59
-    );
+    const monthEnd = new Date(start.getFullYear(), start.getMonth() + i + 1, 0, 23, 59, 59);
 
     const transactions = await db.transaction.findMany({
       where: {
@@ -62,11 +55,11 @@ export async function GET(req: Request) {
     });
 
     const income = transactions
-      .filter(t => t.type === 'income')
+      .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const expense = transactions
-      .filter(t => t.type === 'expense')
+      .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     data.push({
@@ -101,12 +94,12 @@ export async function GET(req: Request) {
 
 ## Definition of Done
 
-- [ ] GET endpoint implemented
-- [ ] Month range calculation
-- [ ] Income/expense/net per month
-- [ ] Default to 6 months
-- [ ] User scoping
-- [ ] Integration tests
+- [x] GET endpoint implemented
+- [x] Month range calculation
+- [x] Income/expense/net per month
+- [x] Default to 6 months
+- [x] User scoping
+- [x] Integration tests
 
 ## Dependencies
 
